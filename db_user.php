@@ -28,10 +28,10 @@ class UserDatabase {
 }
 
 // Database connection settings for user authentication
-$hostAuth = 'localhost'; // Change this if your database is hosted elsewhere
-$dbnameAuth = 'user_authentication'; // Change this to your database name for authentication
-$usernameAuth = 'root'; // Change this to your database username for authentication
-$passwordAuth = ''; // Change this to your database password for authentication
+$hostAuth = 'localhost'; 
+$dbnameAuth = 'user_authentication';
+$usernameAuth = 'root'; 
+$passwordAuth = '';
 
 // Create UserDatabase instance and connect
 $userDb = new UserDatabase($hostAuth, $dbnameAuth, $usernameAuth, $passwordAuth);

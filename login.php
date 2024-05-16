@@ -1,42 +1,32 @@
 <?php
 
 session_start();
-$loggedIn = isset($_SESSION['user_id']); // Kontrola, zda je uživatel přihlášený
-// Include database connection for user authentication
+$loggedIn = isset($_SESSION['user_id']);
+
 include_once 'db_user.php';
 
-// Include user manager
 include_once 'userManager.php';
 
 use MyProject\User\UserManager;
 
-// Create a UserManager instance
 $userManager = new UserManager($pdoUser);
 
-// Initialize variables
 $username = $password = '';
 $errors = array();
 
-// Process form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Validate form data
     $username = $_POST["username"];
     $password = $_POST["password"];
 
-    // If no errors, attempt to login user
     if (empty($errors)) {
-        // Prepare SQL statement
         $stmt = $pdoUser->prepare("SELECT * FROM users WHERE username = ?");
         $stmt->execute([$username]);
         $user = $stmt->fetch();
 
-        // Verify password
         if ($user && password_verify($password, $user['password'])) {
-            // Start session and set user ID
             session_start();
             $_SESSION['user_id'] = $user['id'];
             
-            // Redirect to ttm.php
             header("Location: ttm.php");
             exit();
         } else {
@@ -158,12 +148,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
      <div class="ucet">   
       <div class="ucdi">
-      <!-- Tlačítko pro nepřihlášeného uživatele -->
          <?php if(!$loggedIn): ?>
             <button><a href="signup.php">SIGN UP</a></button>
             <button><a href="login.php">LOG IN</a></button>
          <?php endif; ?>
-         <!-- Tlačítko pro odhlášeného uživatele -->
          <?php if($loggedIn): ?>
             <button><a href="logout.php">LOG OUT</a></button>
          <?php endif; ?>

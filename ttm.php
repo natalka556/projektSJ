@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-$loggedIn = isset($_SESSION['user_id']); // Kontrola, zda je uživatel přihlášený
+$loggedIn = isset($_SESSION['user_id']);
 
 ?>
 <!DOCTYPE html>
@@ -110,11 +110,9 @@ $loggedIn = isset($_SESSION['user_id']); // Kontrola, zda je uživatel přihlá�
 
      <div class="ucet">   
       <div class="ucdi">
-         <!-- Tlačítko pro přihlášeného uživatele -->
          <?php if($loggedIn): ?>
          <button><a href="logout.php">LOG OUT</a></button>
          <?php endif; ?>
-         <!-- Tlačítko pro nepřihlášeného uživatele -->
          <?php if(!$loggedIn): ?>
          <button><a href="signup.php">SIGN UP</a></button>
          <button><a href="login.php">LOG IN</a></button>
@@ -169,19 +167,16 @@ $loggedIn = isset($_SESSION['user_id']); // Kontrola, zda je uživatel přihlá�
     <?php endif; ?>
     
     <h2>Comments:</h2>
+    <p>POTREBUJETE SA PRIHLASIT NA TO ABY STE MOHLI PRIDAT KOMENTAR</p><br>
     
     <?php
-    // Include database connection
     include 'db_connection.php';
 
-    // Create a Database instance and connect
     $db = new Database($host, $dbname, $username, $password);
     $pdo = $db->connect();
 
-    // Retrieve ID přihlášeného uživatele
     $loggedInUserId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
 
-    // Retrieve comments from the database
     try {
         $stmt = $pdo->query("SELECT * FROM comments ORDER BY created_at DESC");
         $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -193,16 +188,15 @@ $loggedIn = isset($_SESSION['user_id']); // Kontrola, zda je uživatel přihlá�
     foreach ($comments as $comment) {
         echo "<div class='comment'>";
         echo "<p><strong>{$comment['name']}:</strong> {$comment['comment']} ({$comment['created_at']})</p>";
-        // Zobrazení tlačítka na odstranění komentáře pouze pro přihlášeného uživatele
         if ($loggedIn && $comment['user_id'] == $loggedInUserId) {
             echo "<form method='post' action='deleteComment.php'>";
-            echo "<input type='hidden' name='comment_id' value='{$comment['id']}'>"; // Skryté pole pro ID komentáře
-            echo "<input type='submit' value='Delete'>"; // Tlačítko pro odstranění komentáře
+            echo "<input type='hidden' name='comment_id' value='{$comment['id']}'>"; 
+            echo "<input type='submit' value='Delete'>"; 
             echo "</form>";
-            // Pokud uživatel vytvořil tento komentář, zobrazí se možnost úpravy
+           
             echo "<form method='get' action='editComment.php'>";
-            echo "<input type='hidden' name='comment_id' value='{$comment['id']}'>"; // Skryté pole pro ID komentáře
-            echo "<input type='submit' value='Edit'>"; // Tlačítko pro úpravu komentáře
+            echo "<input type='hidden' name='comment_id' value='{$comment['id']}'>"; 
+            echo "<input type='submit' value='Edit'>"; 
             echo "</form>";
         }
         echo "</div>";

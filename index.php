@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-$loggedIn = isset($_SESSION['user_id']); // Kontrola, či je používateľ prihlásený
+$loggedIn = isset($_SESSION['user_id']); 
 
 ?>
 
@@ -115,11 +115,11 @@ $loggedIn = isset($_SESSION['user_id']); // Kontrola, či je používateľ prihl
    
         <div class="ucet">   
          <div class="ucdi">
-         <!-- Tlačítko pro přihlášeného uživatele -->
+         
          <?php if($loggedIn): ?>
             <button><a href="logout.php">LOG OUT</a></button>
             <?php endif; ?>
-            <!-- Tlačítko pro nepřihlášeného uživatele -->
+            
             <?php if(!$loggedIn): ?>
             <button><a href="signup.php">SIGN UP</a></button>
             <button><a href="login.php">LOG IN</a></button>

@@ -1,24 +1,17 @@
 <?php
-// Include database connection for user authentication
 include_once 'db_user.php';
 
-// Include user manager
 include_once 'userManager.php';
 
 use MyProject\User\UserManager;
 
-// Create a UserManager instance
-$userManager = new UserManager($pdoUser); // Předáváme správné připojení k databázi "user_authentication"
+$userManager = new UserManager($pdoUser); 
 
-// Process form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Validate form data
     $username = $_POST["username"];
     $password = $_POST["password"];
 
-    // If no errors, register user
     if (empty($errors)) {
-        // Register user
         $userManager->registerUser($username, $password);
     }
 }
@@ -157,7 +150,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
          <input class="signin" type="submit" value="Zaregistrovať sa">
       </form>
       <?php
-    // Display validation errors
     if (!empty($errors)) {
         foreach ($errors as $error) {
             echo "<p style='color: red;'>$error</p>";

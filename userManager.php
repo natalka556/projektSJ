@@ -18,7 +18,6 @@ class UserManager {
             $stmt = $this->pdo->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
             $stmt->execute([$username, $hashed_password]);
 
-            // Redirect to login page
             header("Location: login.php");
             exit();
         } catch (\PDOException $e) {

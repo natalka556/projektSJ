@@ -6,10 +6,8 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Include database connection
 include 'db_connection.php';
 
-// Create a Database instance and connect
 $db = new Database($host, $dbname, $username, $password);
 $pdo = $db->connect();
 
@@ -17,7 +15,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $comment_id = $_POST['comment_id'];
     $new_comment = $_POST['comment'];
 
-    // Retrieve the comment from the database
     try {
         $stmt = $pdo->prepare("SELECT * FROM comments WHERE id = ?");
         $stmt->execute([$comment_id]);
@@ -27,7 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             die("Unauthorized action");
         }
 
-        // Update the comment
         $update_stmt = $pdo->prepare("UPDATE comments SET comment = ? WHERE id = ?");
         $update_stmt->execute([$new_comment, $comment_id]);
 
@@ -39,7 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 } else {
     $comment_id = $_GET['comment_id'];
 
-    // Retrieve the comment to edit
     try {
         $stmt = $pdo->prepare("SELECT * FROM comments WHERE id = ?");
         $stmt->execute([$comment_id]);

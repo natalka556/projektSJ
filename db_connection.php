@@ -28,10 +28,10 @@ class Database {
 }
 
 // Database connection settings
-$host = 'localhost'; // Change this if your database is hosted elsewhere
-$dbname = 'comments'; // Change this to your database name
-$username = 'root'; // Change this to your database username
-$password = ''; // Change this to your database password
+$host = 'localhost'; 
+$dbname = 'comments'; 
+$username = 'root';
+$password = '';
 
 // Create a Database instance and connect
 $db = new Database($host, $dbname, $username, $password);
