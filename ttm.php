@@ -1,3 +1,9 @@
+<?php
+session_start();
+
+$loggedIn = isset($_SESSION['user_id']); // Kontrola, zda je uživatel přihlášený
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,7 +16,7 @@
     
    <div id="menu">
       <div class="icons">
-         <a href="index.html">
+         <a href="index.php">
             <div class="layer">
                <span></span>
                <span></span>
@@ -82,7 +88,7 @@
        <div class="searching">
           <a id="list" href="#">
              <div>
-                <a class="names" href="talktome.html">Talk to me</a>
+                <a class="names" href="ttm.php">Talk to me</a>
              </div>
              <p class="names">Cobweb</p>
              <p class="names">In time</p>
@@ -104,8 +110,15 @@
 
      <div class="ucet">   
       <div class="ucdi">
-         <button><a href="#">SIGN UP</a></button>
-         <button><a href="sign.html">LOGIN</a></button>
+         <!-- Tlačítko pro přihlášeného uživatele -->
+         <?php if($loggedIn): ?>
+         <button><a href="logout.php">LOG OUT</a></button>
+         <?php endif; ?>
+         <!-- Tlačítko pro nepřihlášeného uživatele -->
+         <?php if(!$loggedIn): ?>
+         <button><a href="signup.php">SIGN UP</a></button>
+         <button><a href="login.php">LOG IN</a></button>
+         <?php endif; ?>
       </div>   
       
      </div>
@@ -144,23 +157,57 @@
    </div>
 
    <div class="komenty">
-   <form action="submitComment.php" method="post">
+    <?php if($loggedIn): ?>
+    <form action="submitComments.php" method="post">
         <label for="name">Your Name:</label><br>
         <input type="text" id="name" name="name"><br>
         <label for="comment">Your Comment:</label><br>
         <textarea id="comment" name="comment" rows="4" cols="50"></textarea><br>
         <input type="submit" value="Submit">
     </form>
-
-    
     <hr>
+    <?php endif; ?>
     
     <h2>Comments:</h2>
+    
     <?php
-    include 'retrieveComments.php';
+    // Include database connection
+    include 'db_connection.php';
+
+    // Create a Database instance and connect
+    $db = new Database($host, $dbname, $username, $password);
+    $pdo = $db->connect();
+
+    // Retrieve ID přihlášeného uživatele
+    $loggedInUserId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+
+    // Retrieve comments from the database
+    try {
+        $stmt = $pdo->query("SELECT * FROM comments ORDER BY created_at DESC");
+        $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        die("Error: " . $e->getMessage());
+    }
+
+    // Display comments
+    foreach ($comments as $comment) {
+        echo "<div class='comment'>";
+        echo "<p><strong>{$comment['name']}:</strong> {$comment['comment']} ({$comment['created_at']})</p>";
+        // Zobrazení tlačítka na odstranění komentáře pouze pro přihlášeného uživatele
+        if ($loggedIn && $comment['user_id'] == $loggedInUserId) {
+            echo "<form method='post' action='deleteComment.php'>";
+            echo "<input type='hidden' name='comment_id' value='{$comment['id']}'>"; // Skryté pole pro ID komentáře
+            echo "<input type='submit' value='Delete'>"; // Tlačítko pro odstranění komentáře
+            echo "</form>";
+            // Pokud uživatel vytvořil tento komentář, zobrazí se možnost úpravy
+            echo "<form method='get' action='editComment.php'>";
+            echo "<input type='hidden' name='comment_id' value='{$comment['id']}'>"; // Skryté pole pro ID komentáře
+            echo "<input type='submit' value='Edit'>"; // Tlačítko pro úpravu komentáře
+            echo "</form>";
+        }
+        echo "</div>";
+    }
     ?>
-
-
    </div>
 
    <script src="js/app.js"></script>
