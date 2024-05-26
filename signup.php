@@ -1,20 +1,39 @@
 <?php
 include_once 'db_user.php';
-
 include_once 'userManager.php';
 
 use MyProject\User\UserManager;
 
-$userManager = new UserManager($pdoUser); 
+session_start();
+
+$userManager = new UserManager($pdoUser);
+
+$errors = array();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST["username"];
     $password = $_POST["password"];
+    $email = $_POST["email"];
+    $is_admin = false; // Default is not admin
+
+    // Check if the current user is an admin and wants to create an admin account
+    if (isset($_SESSION['is_admin']) && $_SESSION['is_admin'] && isset($_POST['is_admin']) && $_POST['is_admin'] == '1') {
+        $is_admin = true;
+    }
+
+    // Validate email
+    if (empty($email)) {
+        $errors[] = "Email is required";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = "Invalid email format";
+    }
 
     if (empty($errors)) {
-        $userManager->registerUser($username, $password);
+        $userManager->registerUser($username, $password, $email, $is_admin); // Pass is_admin to registerUser
     }
 }
+
+include_once 'header.php';
 ?>
 
 
@@ -30,111 +49,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 <body>
 
-   <div id="menu">
-      <div class="icons">
-         <a href="index.php">
-            <div class="layer">
-               <span></span>
-               <span></span>
-               <span></span>
-               <span></span>
-               <span class="fab fa-facebook-f"></span>
-            </div>
-            <div class="text">
-               Home
-            </div>
-         </a>
-         <a href="#">
-            <div class="layer">
-               <span></span>
-               <span></span>
-               <span></span>
-               <span></span>
-               <span class="fab fa-twitter"></span>
-            </div>
-            <div class="text">
-               Movies
-            </div>
-         </a>
-         <a href="#">
-            <div class="layer">
-               <span></span>
-               <span></span>
-               <span></span>
-               <span></span>
-               <span class="fab fa-instagram"></span>
-            </div>
-            <div class="text">
-               TV Shows
-            </div>
-         </a>
-         <a href="showtime.html">
-            <div class="layer">
-               <span></span>
-               <span></span>
-               <span></span>
-               <span></span>
-               <span class="fab fa-linkedin-in"></span>
-            </div>
-            <div class="text">
-               Show Times
-            </div>
-         </a>
-         <a href="#">
-            <div class="layer">
-               <span></span>
-               <span></span>
-               <span></span>
-               <span></span>
-               <span class="fab fa-youtube"></span>
-            </div>
-            <div class="text">
-               Watch List
-            </div>
-         </a>
-     </div>
- 
-     
- 
-     <div class="hladanie">
-
-      <div class="bord">
-         <input id="searchbar" onkeyup="search_movie()" type="text"
-         name="search" placeholder="Vyhľadaj film alebo seriál...">
- 
- 
-       <div class="searching">
-          <a id="list" href="#">
-             <div>
-                <a class="names" href="ttm.php">Talk to me</a>
-             </div>
-             <p class="names">Cobweb</p>
-             <p class="names">In time</p>
-             <p class="names">Oppenheimer</p>
-             <p class="names">Zootopia</p>
-             <p class="names">Red Notice</p>
-             <p class="names">Adrift</p>
-             <p class="names">The visit</p>
-             <p class="names">The nun</p>
-             <p class="names">Abandoned</p>
-             <p class="names">Tangled</p>
-             <p class="names">Frozen</p>
-          </a>
-       </div> 
-      </div>
-
-       
-     </div> 
-
-     <div class="ucet">   
-      <div class="ucdi">
-         <button><a href="signup.php">SIGN UP</a></button>
-         <button><a href="login.php">LOG IN</a></button>
-      </div>   
-      
-     </div>
-
-   </div>
 
    <div class="zalozenie">
       <h2>REGISTRÁCIA</h2>
@@ -143,19 +57,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       </div>
       <div class="udaje">
       <form method="post" action="">
-         <p>Email:</p>
-         <input type="text" name="username"><br>
-         <p>Heslo:</p>
-         <input type="password" name="password"><br>
-         <input class="signin" type="submit" value="Zaregistrovať sa">
-      </form>
-      <?php
-    if (!empty($errors)) {
-        foreach ($errors as $error) {
-            echo "<p style='color: red;'>$error</p>";
-        }
-    }
-    ?>
+            <p>Username:</p>
+            <input type="text" name="username"><br>
+            <p>Email:</p>
+            <input type="email" name="email"><br>
+            <p>Heslo:</p>
+            <input type="password" name="password"><br>
+            <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin']): ?>
+                <p>Admin:</p>
+                <input type="checkbox" name="is_admin" value="1"><br>
+            <?php endif; ?>
+            <input class="signin" type="submit" value="Zaregistrovať sa">
+         </form>
+         <?php
+         if (!empty($errors)) {
+             foreach ($errors as $error) {
+                 echo "<p style='color: red;'>$error</p>";
+             }
+         }
+         ?>
          
       </div>
       
@@ -188,5 +108,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
    <script src="js/app.js"></script>
 </body>
 </html>
+
+<?php
+ include_once 'footer.php';
+?>
 
 

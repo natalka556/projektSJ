@@ -1,42 +1,46 @@
 <?php
-
 session_start();
 $loggedIn = isset($_SESSION['user_id']);
 
 include_once 'db_user.php';
-
 include_once 'userManager.php';
 
 use MyProject\User\UserManager;
 
 $userManager = new UserManager($pdoUser);
 
-$username = $password = '';
+$email = $password = '';
 $errors = array();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST["username"];
+    $email = $_POST["email"];
     $password = $_POST["password"];
 
     if (empty($errors)) {
-        $stmt = $pdoUser->prepare("SELECT * FROM users WHERE username = ?");
-        $stmt->execute([$username]);
+        // Prepare the SQL query using a prepared statement
+        $stmt = $pdoUser->prepare("SELECT * FROM users WHERE email = ?");
+        
+        // Bind parameters to the prepared statement
+        $stmt->bindParam(1, $email);
+        
+        // Execute the prepared statement
+        $stmt->execute();
+
+        // Fetch the result
         $user = $stmt->fetch();
 
         if ($user && password_verify($password, $user['password'])) {
-            session_start();
             $_SESSION['user_id'] = $user['id'];
-            
+            $_SESSION['is_admin'] = $user['is_admin']; // Store the is_admin status in the session
+
             header("Location: ttm.php");
             exit();
         } else {
-            $errors[] = "Invalid username or password";
+            $errors[] = "Invalid email or password";
         }
     }
 }
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -46,10 +50,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
    <link rel="stylesheet" href="css/sign.css">
    <title>Sign in</title>
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 </head>
 <body>
-
    <div id="menu">
       <div class="icons">
          <a href="index.php">
@@ -114,36 +116,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
          </a>
      </div>
  
-     
- 
      <div class="hladanie">
-
-      <div class="bord">
-         <input id="searchbar" onkeyup="search_movie()" type="text"
-         name="search" placeholder="Vyhľadaj film alebo seriál...">
- 
- 
-       <div class="searching">
-          <a id="list" href="#">
-             <div>
-                <a class="names" href="ttm.php">Talk to me</a>
-             </div>
-             <p class="names">Cobweb</p>
-             <p class="names">In time</p>
-             <p class="names">Oppenheimer</p>
-             <p class="names">Zootopia</p>
-             <p class="names">Red Notice</p>
-             <p class="names">Adrift</p>
-             <p class="names">The visit</p>
-             <p class="names">The nun</p>
-             <p class="names">Abandoned</p>
-             <p class="names">Tangled</p>
-             <p class="names">Frozen</p>
-          </a>
-       </div> 
-      </div>
-
-       
+        <div class="bord">
+           <input id="searchbar" onkeyup="search_movie()" type="text" name="search" placeholder="Vyhľadaj film alebo seriál...">
+           <div class="searching">
+              <a id="list" href="#">
+                 <div>
+                    <a class="names" href="ttm.php">Talk to me</a>
+                 </div>
+                 <p class="names">Cobweb</p>
+                 <p class="names">In time</p>
+                 <p class="names">Oppenheimer</p>
+                 <p class="names">Zootopia</p>
+                 <p class="names">Red Notice</p>
+                 <p class="names">Adrift</p>
+                 <p class="names">The visit</p>
+                 <p class="names">The nun</p>
+                 <p class="names">Abandoned</p>
+                 <p class="names">Tangled</p>
+                 <p class="names">Frozen</p>
+              </a>
+           </div> 
+        </div>
      </div> 
 
      <div class="ucet">   
@@ -156,9 +150,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <button><a href="logout.php">LOG OUT</a></button>
          <?php endif; ?>
       </div>   
-      
      </div>
-
    </div>
 
    <div class="zalozenie">
@@ -167,23 +159,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
          <img class="main" src="img/putiklogo.png" alt="">
       </div>
       <div class="udaje">
-      <form method="post" action="login.php">
-      <p>Email:</p>
-         <input class="inp" type="text" id="email" name="username" value="<?php echo htmlspecialchars($username); ?>">
-         <p>Heslo:</p>
-         <input class="inp" type="password" name="password">
-        <input class="signin" type="submit" value="Prihlásiť sa">
-        <?php
-        if (!empty($errors)) {
-            echo '<div style="color: red;">' . implode('<br>', $errors) . '</div>';
-        }
-        ?>
-      </form>
-         
+         <form method="post" action="login.php">
+            <p>Email:</p>
+            <input class="inp" type="text" id="email" name="email" value="<?php echo htmlspecialchars($email); ?>"> <!-- Change input name to email -->
+            <p>Heslo:</p>
+            <input class="inp" type="password" name="password">
+            <input class="signin" type="submit" value="Prihlásiť sa">
+            <?php
+            if (!empty($errors)) {
+                echo '<div style="color: red;">' . implode('<br>', $errors) . '</div>';
+            }
+            ?>
+         </form>
       </div>
-      
-      
-
    </div>
 
    <div class="doplnok">

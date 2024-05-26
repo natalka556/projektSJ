@@ -9,14 +9,14 @@ class UserManager {
         $this->pdo = $pdo;
     }
 
-    public function registerUser($username, $password) {
+    public function registerUser($username, $password, $email, $is_admin = false) {
         try {
             // Hash password
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
             // Insert user into database
-            $stmt = $this->pdo->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
-            $stmt->execute([$username, $hashed_password]);
+            $stmt = $this->pdo->prepare("INSERT INTO users (username, email, password, is_admin) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$username, $email, $hashed_password, $is_admin]);
 
             header("Location: login.php");
             exit();

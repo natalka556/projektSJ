@@ -29,7 +29,7 @@ class UserDatabase {
 
 // Database connection settings for user authentication
 $hostAuth = 'localhost'; 
-$dbnameAuth = 'user_authentication';
+$dbnameAuth = 'movies';
 $usernameAuth = 'root'; 
 $passwordAuth = '';
 

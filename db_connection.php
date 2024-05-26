@@ -29,7 +29,7 @@ class Database {
 
 // Database connection settings
 $host = 'localhost'; 
-$dbname = 'comments'; 
+$dbname = 'movies'; 
 $username = 'root';
 $password = '';
 
