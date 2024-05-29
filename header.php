@@ -1,6 +1,9 @@
 <?php
-session_start();
+// Spustí reláciu (session) alebo pokračuje v existujúcej relácii
+// Relácia umožňuje uchovávať informácie naprieč rôznymi stránkami (napr. prihlasovacie údaje)
+ session_start();
 
+// Kontroluje, či je nastavená hodnota user_id v relácii $_SESSION (t.j. či je používateľ prihlásený).
 $loggedIn = isset($_SESSION['user_id']); 
 
 ?>
@@ -116,14 +119,17 @@ $loggedIn = isset($_SESSION['user_id']);
         <div class="ucet">   
          <div class="ucdi">
          
+            <!-- kontroluje, či je premenná $loggedIn true -->
             <?php if($loggedIn): ?>
                <button><a href="logout.php">LOG OUT</a></button>
                <button><a href="reviews.php">REVIEWS</a></button>
+               <!-- Uzatvára PHP podmienku if -->
                <?php endif; ?>
-            
+            <!-- kontroluje, či je premenná $loggedIn false -->
                <?php if(!$loggedIn): ?>
                <button><a href="signup.php">SIGN UP</a></button>
                <button><a href="login.php">LOG IN</a></button>
+            <!-- Uzatvára PHP podmienku if -->
             <?php endif; ?>
          </div>   
          

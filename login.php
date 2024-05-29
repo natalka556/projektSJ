@@ -1,45 +1,69 @@
 <?php
+// Spustí reláciu (session) alebo pokračuje v existujúcej relácii
+// Relácia umožňuje uchovávať informácie naprieč rôznymi stránkami (napr. prihlasovacie údaje)
 session_start();
+
+// Skontroluje, či je nastavená hodnota user_id v relácii $_SESSION (t.j. či je používateľ prihlásený)
 $loggedIn = isset($_SESSION['user_id']);
 
+// vloží obsah súboru db_user.php a userManager.php do aktuálneho skriptu, ak tieto súbory ešte neboli vložené
 include_once 'db_user.php';
 include_once 'userManager.php';
 
+// Používa PHP namespace MyProject\User a triedu UserManager z tejto oblasť názvov
+// Toto umožňuje jednoduché používanie tejto triedy bez potreby plne kvalifikovaného názvu
 use MyProject\User\UserManager;
 
+// Vytvorí nový objekt UserManager s názvom $userManager, pričom ako parameter pre konštruktor odovzdá $pdoUser, čo je PDO objekt na pripojenie k databáze používateľov
 $userManager = new UserManager($pdoUser);
 
+// Inicializuje premenné $email a $password ako prázdne reťazce
 $email = $password = '';
+// Inicializuje premennú $errors ako prázdne pole, ktoré bude obsahovať chyby, ak nejaké nastanú
 $errors = array();
 
+// Skontroluje, či je požiadavka HTTP typu POST (či bol formulár odoslaný)
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+   // Priradí hodnoty email a password z poľa $_POST do premenných $email a $password
     $email = $_POST["email"];
     $password = $_POST["password"];
 
+    // Skontroluje, či pole $errors je prázdne
+    // Ak je prázdne, znamená to, že zatiaľ neboli zistené žiadne chyby.
     if (empty($errors)) {
-        // Prepare the SQL query using a prepared statement
+         // Pripraví SQL dotaz na získanie používateľa z tabuľky users, kde sa email rovná hodnote premennej $email
         $stmt = $pdoUser->prepare("SELECT * FROM users WHERE email = ?");
         
-        // Bind parameters to the prepared statement
+        // Priradí hodnotu $email k prvému parametru v pripravenom SQL dotaze
         $stmt->bindParam(1, $email);
         
-        // Execute the prepared statement
+        // Vykoná pripravený SQL dotaz
         $stmt->execute();
 
-        // Fetch the result
+        // Získa výsledok dotazu a uloží ho do premennej $user ako asociatívne pole
         $user = $stmt->fetch();
 
+        // Skontroluje, či bol používateľ nájdený ($user nie je false) a či sa heslo zhoduje s hashovaným heslom v databáze pomocou funkcie password_verify
         if ($user && password_verify($password, $user['password'])) {
+            // Ak je heslo správne, uloží ID používateľa do relácie $_SESSION pod kľúčom user_id
             $_SESSION['user_id'] = $user['id'];
-            $_SESSION['is_admin'] = $user['is_admin']; // Store the is_admin status in the session
+            // Uloží aj status administrátora (pravdepodobne boolean) do relácie $_SESSION pod kľúčom is_admin
+            $_SESSION['is_admin'] = $user['is_admin'];
 
-            header("Location: ttm.php");
+            // Presmeruje používateľa na stránku index.php
+            header("Location: index.php");
+            // Ukončí vykonávanie skriptu
             exit();
         } else {
+         // Ak sa používateľ nenašiel alebo heslo nebolo správne, pridá chybu "Invalid email or password" do poľa $errors
             $errors[] = "Invalid email or password";
         }
     }
 }
+
+// vloží obsah súboru header.php do aktuálneho skriptu, ak tento súbor ešte nebol vložený. 
+include_once 'header.php';
+
 ?>
 
 <!DOCTYPE html>
@@ -52,106 +76,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-   <div id="menu">
-      <div class="icons">
-         <a href="index.php">
-            <div class="layer">
-               <span></span>
-               <span></span>
-               <span></span>
-               <span></span>
-               <span class="fab fa-facebook-f"></span>
-            </div>
-            <div class="text">
-               Home
-            </div>
-         </a>
-         <a href="#">
-            <div class="layer">
-               <span></span>
-               <span></span>
-               <span></span>
-               <span></span>
-               <span class="fab fa-twitter"></span>
-            </div>
-            <div class="text">
-               Movies
-            </div>
-         </a>
-         <a href="#">
-            <div class="layer">
-               <span></span>
-               <span></span>
-               <span></span>
-               <span></span>
-               <span class="fab fa-instagram"></span>
-            </div>
-            <div class="text">
-               TV Shows
-            </div>
-         </a>
-         <a href="showtime.html">
-            <div class="layer">
-               <span></span>
-               <span></span>
-               <span></span>
-               <span></span>
-               <span class="fab fa-linkedin-in"></span>
-            </div>
-            <div class="text">
-               Show Times
-            </div>
-         </a>
-         <a href="#">
-            <div class="layer">
-               <span></span>
-               <span></span>
-               <span></span>
-               <span></span>
-               <span class="fab fa-youtube"></span>
-            </div>
-            <div class="text">
-               Watch List
-            </div>
-         </a>
-     </div>
- 
-     <div class="hladanie">
-        <div class="bord">
-           <input id="searchbar" onkeyup="search_movie()" type="text" name="search" placeholder="Vyhľadaj film alebo seriál...">
-           <div class="searching">
-              <a id="list" href="#">
-                 <div>
-                    <a class="names" href="ttm.php">Talk to me</a>
-                 </div>
-                 <p class="names">Cobweb</p>
-                 <p class="names">In time</p>
-                 <p class="names">Oppenheimer</p>
-                 <p class="names">Zootopia</p>
-                 <p class="names">Red Notice</p>
-                 <p class="names">Adrift</p>
-                 <p class="names">The visit</p>
-                 <p class="names">The nun</p>
-                 <p class="names">Abandoned</p>
-                 <p class="names">Tangled</p>
-                 <p class="names">Frozen</p>
-              </a>
-           </div> 
-        </div>
-     </div> 
-
-     <div class="ucet">   
-      <div class="ucdi">
-         <?php if(!$loggedIn): ?>
-            <button><a href="signup.php">SIGN UP</a></button>
-            <button><a href="login.php">LOG IN</a></button>
-         <?php endif; ?>
-         <?php if($loggedIn): ?>
-            <button><a href="logout.php">LOG OUT</a></button>
-         <?php endif; ?>
-      </div>   
-     </div>
-   </div>
+   
 
    <div class="zalozenie">
       <h2>PRIHLÁSENIE</h2>
@@ -159,14 +84,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
          <img class="main" src="img/putiklogo.png" alt="">
       </div>
       <div class="udaje">
+         <!-- Vytvára formulár, ktorý odošle dáta na stránku login.php pomocou metódy POST -->
          <form method="post" action="login.php">
             <p>Email:</p>
-            <input class="inp" type="text" id="email" name="email" value="<?php echo htmlspecialchars($email); ?>"> <!-- Change input name to email -->
+            <!-- nastavuje predvolenú hodnotu tohto vstupného poľa
+            // PHP kód sa vykoná na serveri a vloží hodnotu premennej $email do poľa -->
+            <input class="inp" type="text" id="email" name="email" value="<?php echo htmlspecialchars($email); ?>"> 
             <p>Heslo:</p>
             <input class="inp" type="password" name="password">
             <input class="signin" type="submit" value="Prihlásiť sa">
             <?php
+            // Kontroluje, či pole $errors nie je prázdne
             if (!empty($errors)) {
+               // implode('<br>', $errors) spojí všetky prvky poľa $errors do jedného reťazca
                 echo '<div style="color: red;">' . implode('<br>', $errors) . '</div>';
             }
             ?>
@@ -198,3 +128,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
    <script src="js/app.js"></script>
 </body>
 </html>
+
+<?php
+// vloží obsah súboru footer.php do aktuálneho skriptu, ak tento súbor ešte nebol vložený
+// Ak bol súbor už vložený, tento riadok bude ignorovaný.
+ include_once 'footer.php';
+?>
